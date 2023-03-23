@@ -20,13 +20,14 @@ const firestore = app.firestore();
     const body = request.body
     const miId = body.miId
     const idMeGusta = body.idMeGusta
-    const path = `users/${idMeGusta}/leGusto/${miId}` 
+    const docRef = firestore.collection('users').doc(idMeGusta).collection('leGusto').doc(miId);
+    
     const objetoAInsertar = {
         userId: miId,
-        docRef: `users/${miId}`
+        docRef: firestore.collection('users').doc(miId)
     }
    try{
-      const resultadoSet = await firestore.doc(path).set(objetoAInsertar, { merge: true })
+      const resultadoSet = await docRef.set(objetoAInsertar, { merge: true })
       response.send({resultado: resultadoSet})
    }catch(e){
       response.send(e)
