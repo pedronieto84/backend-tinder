@@ -13,6 +13,8 @@ exports.post = functions.https.onRequest(async (request, response) => {
   // Extraigo mi id
   const miId = body.miId;
   // Si es un tipo "noMeGusta"
+   // Extraigo la id de quien me gusta
+   const idMeGusta = body.idMeGusta;
 
   if (body.tipo === "noMeGusta") {
     const noMeGusta = body.noMeGusta;
@@ -38,22 +40,21 @@ exports.post = functions.https.onRequest(async (request, response) => {
 
   if (body.tipo === "nosGustamos") {
     // Primero hay que ponerle nuestros objects en las subcolecciones de nosGustamos
-    const path1 = `users/${miId}/nosGustamos/${noMeGusta}`;
-    const path2 = `users/${noMeGusta}/nosGustamos/${miId}`;
+    const path1 = `users/${miId}/nosGustamos/${idMeGusta}`;
+    const path2 = `users/${idMeGusta}/nosGustamos/${miId}`;
 
     await firestore.doc(path1).set(objetoAInsertar, { merge: true });
     await firestore.doc(path2).set(objetoAInsertar, { merge: true });
 
     // Tengo que quitar de mi subcoleccion de legusto a esa persona
-    const pathEliminarNoMeGusta = `users/${miId}/leGusto/${noMeGusta}`;
-    const resultado = await firestore.doc(pathEliminarNoMeGusta).delete();
+    const path3 = `users/${miId}/leGusto/${idMeGusta}`;
+    const resultado = await firestore.doc(path3).delete();
 
     // Devuelvo esta respuesta a quien me hizo la petición
     return response.send({ resultado: resultado });
   }
 
-  // Extraigo la id de quien me gusta
-  const idMeGusta = body.idMeGusta;
+ 
   // Preparo la ruta
   const path = `users/${idMeGusta}/leGusto/${miId}`;
 
