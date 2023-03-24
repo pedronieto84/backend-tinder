@@ -39,19 +39,32 @@ exports.post = functions.https.onRequest(async (request, response) => {
   // Logica cuando nos gustamos mutuamente
 
   if (body.tipo === "nosGustamos") {
-    // Primero hay que ponerle nuestros objects en las subcolecciones de nosGustamos
+    // 1. Primero hay que ponerle nuestros objects en las subcolecciones de nosGustamos
     const path1 = `users/${miId}/nosGustamos/${idMeGusta}`;
     const path2 = `users/${idMeGusta}/nosGustamos/${miId}`;
 
+    // 2. Inserto en cada subcoleccion (mia y suya) nuestros respectivos objects
     await firestore.doc(path1).set(objetoAInsertar, { merge: true });
     await firestore.doc(path2).set(objetoAInsertar, { merge: true });
 
-    // Tengo que quitar de mi subcoleccion de legusto a esa persona
+    // 3. Tengo que quitar de mi subcoleccion de legusto a esa persona
     const path3 = `users/${miId}/leGusto/${idMeGusta}`;
     const resultado = await firestore.doc(path3).delete();
 
+    // 4. Crear el chatId y su objeto
+    const arrayIds = [ miId, idMeGusta ]
+    arrayIds.sort()
+    const chatId = `${arrayIds[0]}-${arrayIds[1]}`
+    // Defino el elemento que voy a insertar en la colección 
+    const chatObject = {
+      idsConcatenadas: chatId,
+      arrayConversantes: arrayIds
+    }
+
+    const res= await firestore.collection('chats').doc(chatId).set(chatObject, {merge: true})
+
     // Devuelvo esta respuesta a quien me hizo la petición
-    return response.send({ resultado: resultado });
+    return response.send({ resultado: res });
   }
 
  
